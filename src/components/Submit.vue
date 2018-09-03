@@ -176,11 +176,11 @@ export default {
       this.selected_pairs = [];
     },
   },
-  methods:{
+  methods: {
     getResult: function () {
       alert('Not yet implemented');
     },
-    handleFileUpload() {
+    handleFileUpload: function () {
       this.file = this.$refs.file.files[0];
     },
     parseText: function () {
@@ -197,14 +197,14 @@ export default {
       });
     },
     selectAllChains: function () {
-      if (this.selected_chains === this.all_chains){
+      if (this.selected_chains === this.all_chains) {
         this.selected_chains = [];
       } else {
         this.selected_chains = this.all_chains;
       }
     },
     selectAllPairs: function () {
-      if (this.selected_pairs === this.all_pairs){
+      if (this.selected_pairs === this.all_pairs) {
         this.selected_pairs = [];
       } else {
         this.selected_pairs = this.all_pairs;
@@ -242,14 +242,14 @@ export default {
           alert('Job submission failed. Check your browser console for details');
         });
     },
-    getChainXML: function(id) {
+    getChainXML: function (id) {
       for (let chain of this.all_chains) {
         if (chain.name === id) {
           return `<Chain index='${chain.name}'><Start>${chain.start}</Start><End>${chain.end}</End><Natural>${chain.name}</Natural></Chain>`;
         }
       }
     },
-    makeXML: function() {
+    makeXML: function () {
       let index = Math.random().toString(36).slice(-10);
       let txt = `<ChainPairs index='${index}' protons='false'><File>${this.file_path}</File><Email>${this.email}</Email><IP>Unknown</IP><OS>Unknown</OS>`;
       for (let chain_pair of this.selected_pairs) {
@@ -274,7 +274,7 @@ export default {
       console.log(xml);
       return xml;
     },
-    escapeXml: function(unsafe) {
+    escapeXml: function (unsafe) {
       return unsafe.replace(/[<>&'']/g, function (c) {
         switch (c) {
           case '<': return '&lt;';
