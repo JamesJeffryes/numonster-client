@@ -1,7 +1,7 @@
 <template>
-  <div id='app' class='container main'>
-    <h1 >MONSTER</h1>
+  <div id='submit' class='container main'>
     <div class='row'>
+      <!-- COL 1 -->
       <div class='col-sm'>
         <div class='card'>
           <div class='card-header'>
@@ -36,9 +36,11 @@
           </div>
         </div>
       </div>
+
+      <!-- COL 2 -->
       <div class='col-sm'>
         <div class='card' v-if='!all_chains.length'>
-          <div class='card-header alert-warning'>
+          <div class='card-header alert-danger'>
             Upload a PDB file to continue
           </div>
         </div>
@@ -90,6 +92,8 @@
           </div>
         </div>
       </div>
+
+      <!-- COL 3 -->
       <div class='col-sm'>
         <div class='card'>
           <div class='card-header'>
@@ -111,7 +115,7 @@
                 PDB ID
               </label>
               <input id='ret_pdb_id' v-model='ret_pdb_id' v-validate='{regex: /[A-Z0-9]{4}/ }'
-                     class='form-control' type='ret_pdb_id' name='ret_pdb_id'>
+                     class='form-control' type='ret_pdb_id' name='ret_pdb_id' disabled>
               <p class='text-danger' >{{ errors.first('ret_pdb_id') }}</p>
             </div>
             <button type='button' class='btn btn-primary btn-block' v-on:click='getResult'
@@ -147,7 +151,7 @@ let combinations = function (array) {
 };
 
 export default {
-  name: 'app',
+  name: 'Submit',
   data: () => ({
     file: '',
     pdb_id: '',
@@ -178,7 +182,7 @@ export default {
   },
   methods: {
     getResult: function () {
-      alert('Not yet implemented');
+      this.$router.push({name: 'Result', params: {job_id: this.job_id }});
     },
     handleFileUpload: function () {
       this.file = this.$refs.file.files[0];
@@ -208,18 +212,6 @@ export default {
         this.selected_pairs = [];
       } else {
         this.selected_pairs = this.all_pairs;
-      }
-    },
-    customLabel: function ({ name, start, end }) {
-      return `${name}: ${start} - ${end}`;
-    },
-    addChain: function () {
-      if (this.all_chains.find(x => x.name === this.new_chain.name)) {
-        alert('Duplicate chain name');
-      } else if (this.new_chain.end <= this.new_chain.start) {
-        alert('End residue must be greated than the starting residue');
-      } else {
-        this.all_chains.push(Object.assign({}, this.new_chain));
       }
     },
     submitJob: function () {
