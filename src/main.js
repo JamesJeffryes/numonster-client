@@ -6,7 +6,8 @@ import router from './router'
 import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap-vue/dist/bootstrap-vue.css';
 
-Vue.config.productionTip = false
+Vue.config.productionTip = false;
+Vue.prototype.$server_url = 'http://localhost:9000';
 
 /* eslint-disable no-new */
 new Vue({
@@ -14,4 +15,4 @@ new Vue({
   router,
   components: { App },
   template: '<App/>'
-})
+});

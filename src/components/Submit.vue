@@ -163,7 +163,6 @@ export default {
     selected_pairs: [],
     new_chain: {},
     monster_url: 'https://cors-anywhere.herokuapp.com/http://monster.northwestern.edu:8081/',
-    server_url: 'http://localhost:9000',
     job_id: '',
     ret_pdb_id: '',
   }),
@@ -182,7 +181,7 @@ export default {
   },
   methods: {
     getResult: function () {
-      this.$router.push({name: 'Result', params: {job_id: this.job_id }});
+      this.$router.push({name: 'Result', params: { job_id: this.job_id }});
     },
     handleFileUpload: function () {
       this.file = this.$refs.file.files[0];
@@ -190,7 +189,7 @@ export default {
     parseText: function () {
       let formData = new FormData();
       formData.append('pdbFile', this.file);
-      this.$http.post(this.server_url + '/upload', formData).then(function (response) {
+      this.$http.post(this.$server_url + '/upload', formData).then(function (response) {
         console.log(response);
         this.all_chains = response.body.chains;
         this.file_path = response.body.file_path;
