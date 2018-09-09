@@ -27,7 +27,7 @@
               <label class='control-label' for='pdb_id' v-b-tooltip.hover.right
                      title='Enter the 4 character PDB ID to load directly from the Protein Data
                     Bank'>PDB ID</label>
-              <input id='pdb_id' v-validate='{regex: /[A-Z0-9]{4}/ }' class='form-control'
+              <input id='pdb_id' v-model="pdb_id" v-validate='{regex: /[A-Za-z0-9]{4}/ }' class='form-control'
                      type='pdb_id' name='pdb_id'>
               <p class='text-danger' >{{ errors.first('pdb_id') }}</p>
             </div>
@@ -189,6 +189,7 @@ export default {
     parseText: function () {
       let formData = new FormData();
       formData.append('pdbFile', this.file);
+      formData.append('pdbId', this.pdb_id);
       this.$http.post(this.$server_url + '/upload', formData).then(function (response) {
         console.log(response);
         this.all_chains = response.body.chains;
