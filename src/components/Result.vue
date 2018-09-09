@@ -6,7 +6,7 @@
     <table class="table table-striped">
       <thead>
       <tr>
-        <th>Models</th>
+        <th>Model</th>
         <th>Chain 1</th>
         <th>Chain 2</th>
         <th colspan="2">View Results</th>
@@ -22,18 +22,18 @@
               <td>{{model}}</td>
               <td>{{chain.slice(0,1)}}</td>
               <td>{{chain.slice(1,2)}}</td>
-              <td><button class="button btn-default">2D Display</button></td>
-              <td><button class="button btn-default" v-on:click='open3D(links.PDB.PDB, chain.slice(0,1), chain.slice(1,2))'>3D Display</button></td>
-              <td><a v-bind:href="links.PDB.PDB">PDB File</a></td>
+              <td><button class="button btn-default" v-on:click='open2D()'>2D Display</button></td>
+              <td><button v-if="links.PDB" class="button btn-default" v-on:click='open3D(links.PDB.PDB, chain.slice(0,1), chain.slice(1,2))'>3D Display</button></td>
+              <td><a v-if="links.PDB" v-bind:href="links.PDB.PDB">PDB File</a></td>
               <td>
                 <a target="_blank" v-bind:href="links.Results.XML">XML File</a>
                 <br>
                 <a target="_blank" v-bind:href="links.Results.TXT">TXT File</a>
               </td>
               <td>
-                <a target="_blank" v-bind:href="links.Logs.MSMS">MSMS</a>
+                <a target="_blank" v-if="links.Logs" v-bind:href="links.Logs.MSMS">MSMS</a>
                 <br>
-                <a target="_blank" v-bind:href="links.Logs.HBPlus">HBPlus</a>
+                <a target="_blank" v-if="links.Logs" v-bind:href="links.Logs.HBPlus">HBPlus</a>
               </td>
             </tr>
           </template>
@@ -67,6 +67,9 @@ export default {
       &surface=opacity:0.6&select=chain:${chain1}&style=cartoon:color~green
       &select=chain:${chain2}&style=cartoon:color~red`)
 
+    },
+    open2D: function () {
+      alert('Not yet implemented')
     }
   }
 }

@@ -6,14 +6,13 @@
       </router-link>
     </div>
     <router-view/>
-    <footer class="footer">
+    <b-navbar class="footer">
       <p>
         MONSTER made possible by grants from the National Cancer Institute and Northwestern University
-      </p>
-      <p>
+        <br/>
         &copy; 2003-{{getYear()}} Northwestern University
       </p>
-    </footer>
+    </b-navbar>
   </div>
 </template>
 
@@ -39,9 +38,5 @@ export default {
     padding-top: 40px;
   }
   .footer{
-    position: fixed;
-    left: 0;
-    bottom: 0;
-    width: 100%;
   }
 </style>
