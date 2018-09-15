@@ -7,7 +7,7 @@ import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap-vue/dist/bootstrap-vue.css';
 
 Vue.config.productionTip = false;
-Vue.prototype.$server_url = 'http://localhost:9000';
+Vue.prototype.$server_url = 'https://numonster.northwestern.edu/server';
 
 /* eslint-disable no-new */
 new Vue({
