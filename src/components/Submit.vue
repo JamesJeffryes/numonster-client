@@ -1,5 +1,17 @@
 <template>
   <div id='submit' class='container main'>
+    <b-alert variant="success"
+             dismissible
+             :show="showSuccessAlert"
+             @dismissed="showSuccessAlert=false">
+      Job submission succeeded. Check your email for details
+    </b-alert>
+    <b-alert variant="danger"
+             dismissible
+             :show="showFailAlert"
+             @dismissed="showFailAlert=false">
+      Job submission failed. Check your browser console for details
+    </b-alert>
     <div class='row'>
       <!-- COL 1 -->
       <div class='col-sm'>
@@ -85,7 +97,8 @@
                   <label class='form-check-label'>{{pair}}</label>
                 </div>
                 <br>
-                <button type='button' class='btn btn-primary w-100' v-on:click='submitJob'
+                <img v-if="loading" width="50px" src="../../static/loading-gif-transparent-2.gif"/>
+                <button v-if="!loading" type='button' class='btn btn-primary w-100' v-on:click='submitJob'
                         :disabled='!(selected_pairs.length && email)'>Analyze</button>
               </div>
             </div>
@@ -165,6 +178,9 @@ export default {
     monster_url: 'https://cors-anywhere.herokuapp.com/http://monster.northwestern.edu:8081/',
     job_id: '',
     ret_pdb_id: '',
+    loading: false,
+    showSuccessAlert: false,
+    showFailAlert: false,
   }),
   computed: {
     all_pairs: function () {
@@ -219,6 +235,7 @@ export default {
         alert('Missing required fields');
         return;
       }
+      this.loading = true;
       fetch(this.monster_url, {
         method: 'POST',
         body: this.makeXML(),
@@ -226,12 +243,13 @@ export default {
           'Content-Type': 'text/xml',
         },
       }).then(res => res.text())
-        .then((data) => {
-          console.log(data);
-          alert('Job submission succeeded. Check your email for details');
+        .then(() => {
+          this.loading = false;
+          this.showSuccessAlert = true;
         }).catch((err) => {
+          this.loading = false;
           console.error(err);
-          alert('Job submission failed. Check your browser console for details');
+          this.showFailAlert = true;
         });
     },
     getChainXML: function (id) {
