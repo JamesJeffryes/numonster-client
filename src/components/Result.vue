@@ -65,7 +65,7 @@ export default {
     open3D: function (pdb_url, chain1, chain2) {
       window.open(`http://3dmol.csb.pitt.edu/viewer.html?url=${pdb_url}
       &surface=opacity:0.6&select=chain:${chain1}&style=cartoon:color~green
-      &select=chain:${chain2}&style=cartoon:color~red`)
+      &select=chain:${chain2}&style=cartoon:color~yellow`)
 
     },
     open2D: function () {
