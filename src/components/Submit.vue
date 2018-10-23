@@ -187,9 +187,6 @@ export default {
       return combinations(this.selected_chains);
     },
   },
-  components: {
-    VeeValidate
-  },
   watch: {
     selected_chains: function () {
       this.selected_pairs = [];
