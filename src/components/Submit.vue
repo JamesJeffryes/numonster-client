@@ -91,7 +91,7 @@
                 </div>
                 <button class='btn btn-sm btn-secondary' v-on:click='selectAllPairs'
                         v-if='selected_chains.length >= 2'> Select all</button>
-                <div v-for='pair in all_pairs' class='form-check'>
+                <div v-for='pair in all_pairs' :key="pair" class='form-check'>
                   <input type='checkbox' v-model='selected_pairs' :value='pair'
                          class='form-check-input'/>
                   <label class='form-check-label'>{{pair}}</label>

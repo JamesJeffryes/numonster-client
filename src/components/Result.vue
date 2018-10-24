@@ -14,7 +14,7 @@
         <div id="color-table">
           <table>
             <thead>Edge Types</thead>
-              <tr v-for="(color, edge) in edge_colors">
+              <tr v-for="(color, edge) in edge_colors" :key="edge">
                 <td><span v-bind:style="{color: color, 'background-color': 'transparent'}" >{{edge}}</span></td>
               </tr>
           </table>
@@ -39,9 +39,9 @@
       </tr>
       </thead>
       <tbody v-if="result">
-        <template v-for="(chains, model, index) in result.models">
-          <template v-for="(links, chain, index2) in chains">
-            <tr>
+        <template v-for="(chains, model) in result.models">
+          <template v-for="(links, chain) in chains">
+            <tr :key="model+chain">
               <td>{{model}}</td>
               <td>{{chain.slice(0,1)}}</td>
               <td>{{chain.slice(1,2)}}</td>
@@ -71,12 +71,10 @@
 
 <script>
 
-import ButtonClose from "bootstrap-vue/src/components/button/button-close";
 export default {
   name: 'Result',
-  components: {ButtonClose},
   data: () => ({
-    result: "",
+    result: '',
     display_graph: false,
     edge_colors: {
       backbone: '#666',
@@ -85,7 +83,7 @@ export default {
       HYBOND: '#008800'
     },
     s: undefined,
-    info: "",
+    info: '',
   }),
   mounted: function () {
     this.$http.get(this.$server_url + '/results/' + this.$route.params.job_id).then(function (response) {
@@ -100,22 +98,21 @@ export default {
       window.open(`http://3dmol.csb.pitt.edu/viewer.html?url=${pdb_url}
       &surface=opacity:0.6&select=chain:${chain1}&style=cartoon:color~green
       &select=chain:${chain2}&style=cartoon:color~yellow`)
-
     },
     parsepdb: function (pdb) {
-      let residues =[],
-          bonds = [],
-          min_chain_idx = {},
-          offset = 0;
+      let residues = [];
+      let bonds = [];
+      let min_chain_idx = {};
+      let offset = 0;
       pdb.split('\n').forEach((line) => {
-        let chain,
-          aa,
-          index;
-        if ("ATOM" === line.slice(0, 4)) {
+        let chain;
+        let aa;
+        let index;
+        if (line.slice(0, 4) === 'ATOM') {
           aa = line.substring(17, 21).trim();
           chain = line.substring(21, 22).trim();
           index = line.substring(22, 26).trim();
-          if (!min_chain_idx[chain]){
+          if (!min_chain_idx[chain]) {
             min_chain_idx[chain] = parseInt(index);
           }
           let resid = chain + index;
@@ -133,35 +130,33 @@ export default {
               offset = residues.length
             }
             residues.push({
-                id: resid,
-                label: `${resid}: ${aa}`,
-                x: 2*(parseInt(index)-min_chain_idx[chain]),
-                y: offset,
-                color: this.edge_colors.backbone,
-                size: 0.1,
-              });
+              id: resid,
+              label: `${resid}: ${aa}`,
+              x: 2 * (parseInt(index) - min_chain_idx[chain]),
+              y: offset,
+              color: this.edge_colors.backbone,
+              size: 0.1,
+            });
           }
         }
       });
       return {'nodes': residues, 'edges': bonds}
     },
-    extractParsedXML: function(xml_json){
-    let new_edges = [];
-    JSON.parse(xml_json).BONDS.BOND.forEach((bond, index) => {
-      new_edges.push({
-        id: `M${index}`,
-        label: bond.type._text,
-        size: 1/parseFloat(bond.dist._text),
-        source: bond.RESIDUE[0].chain._text + bond.RESIDUE[0]._attributes.index,
-        target: bond.RESIDUE[1].chain._text + bond.RESIDUE[1]._attributes.index,
-        color: this.edge_colors[bond.type._text],
-      })
-    });
-    console.log(JSON.parse(xml_json));
-    console.log(new_edges);
-    return new_edges
+    extractParsedXML: function (xml_json) {
+      let new_edges = [];
+      JSON.parse(xml_json).BONDS.BOND.forEach((bond, index) => {
+        new_edges.push({
+          id: `M${index}`,
+          label: bond.type._text,
+          size: 1 / parseFloat(bond.dist._text),
+          source: bond.RESIDUE[0].chain._text + bond.RESIDUE[0]._attributes.index,
+          target: bond.RESIDUE[1].chain._text + bond.RESIDUE[1]._attributes.index,
+          color: this.edge_colors[bond.type._text],
+        })
+      });
+      return new_edges
     },
-    close2D: function(){
+    close2D: function () {
       this.display_graph = false;
       this.s = undefined;
     },
@@ -170,7 +165,7 @@ export default {
       if (!this.s) {
         // Instantiate sigma, use SetTimeout to give Vue a chance to load the container
         setTimeout(() => {
-          this.s = new sigma({
+          this.s = new sigma({ // eslint-disable-line
             renderer: {
               container: document.getElementById('graph-container'),
               type: 'canvas'
@@ -178,7 +173,7 @@ export default {
             settings: {
               drawLabels: true,
               maxNodeSize: 2,
-              minEdgeSize: .2,
+              minEdgeSize: 0.2,
               maxEdgeSize: 2,
               enableEdgeHovering: true,
               edgeHoverSizeRatio: 4,
