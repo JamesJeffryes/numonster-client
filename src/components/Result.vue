@@ -71,8 +71,10 @@
 
 <script>
 
+import ButtonClose from 'bootstrap-vue/src/components/button/button-close';
 export default {
   name: 'Result',
+  components: {ButtonClose},
   data: () => ({
     result: '',
     display_graph: false,
