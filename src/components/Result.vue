@@ -1,26 +1,29 @@
 <template>
   <div id='result' class='container main'>
-    <div v-if="display_graph" class="card">
-    <div class="card-header">
-      <span>{{display_graph}}</span>
-      <button-close v-on:click="close2D()" class="btn"></button-close>
-    </div>
-    <div class="row card-body">
-      <div  class="col-10">
-        <div id="graph-container"></div>
+    <div v-if="display_label" class="card">
+      <div class="card-header">
+        <span>{{display_label}}</span>
+        <button-close v-on:click="closeDisplay()" class="btn"></button-close>
       </div>
-      <div class="col-2">
-        <br>
-        <div id="color-table">
-          <table>
-            <thead>Edge Types</thead>
-              <tr v-for="(color, edge) in edge_colors" :key="edge">
-                <td><span v-bind:style="{color: color, 'background-color': 'transparent'}" >{{edge}}</span></td>
-              </tr>
-          </table>
+      <div v-if="url_3D" class="card-body">
+        <iframe :src="url_3D" class="display-container" frameborder="0"></iframe>
+      </div>
+      <div v-if="display_graph" class="row card-body">
+        <div  class="col-10">
+          <div id="graph-container" class="display-container"></div>
+        </div>
+        <div class="col-2">
+          <br>
+          <div id="color-table">
+            <table>
+              <thead>Edge Types</thead>
+                <tr v-for="(color, edge) in edge_colors" :key="edge">
+                  <td><span v-bind:style="{color: color, 'background-color': 'transparent'}" >{{edge}}</span></td>
+                </tr>
+            </table>
+          </div>
         </div>
       </div>
-    </div>
     </div>
     <br/>
     <h3>
@@ -46,7 +49,7 @@
               <td>{{chain.slice(0,1)}}</td>
               <td>{{chain.slice(1,2)}}</td>
               <td><button v-if="links.PDB" class="btn btn-secondary" v-on:click='open2D(links.PDB.PDB, links.parsed_bonds, `${chain.slice(0,1)} and ${chain.slice(1,2)} chains from model ${model}`)'>2D Display</button></td>
-              <td><button v-if="links.PDB" class="btn btn-secondary" v-on:click='open3D(links.PDB.PDB, chain.slice(0,1), chain.slice(1,2))'>3D Display</button></td>
+              <td><button v-if="links.PDB" class="btn btn-secondary" v-on:click='open3D(links.PDB.PDB, chain.slice(0,1), chain.slice(1,2), `${chain.slice(0,1)} and ${chain.slice(1,2)} chains from model ${model}`)'>3D Display</button></td>
               <td><a v-if="links.PDB" v-bind:href="links.PDB.PDB">PDB File</a></td>
               <td>
                 <a target="_blank" v-bind:href="links.Results.XML">XML File</a>
@@ -77,7 +80,9 @@ export default {
   components: {ButtonClose},
   data: () => ({
     result: '',
+    display_label: '',
     display_graph: false,
+    url_3D: false,
     edge_colors: {
       backbone: '#666',
       HYDPHB: '#880000',
@@ -96,10 +101,12 @@ export default {
     });
   },
   methods: {
-    open3D: function (pdb_url, chain1, chain2) {
-      window.open(`http://3dmol.csb.pitt.edu/viewer.html?url=${pdb_url}
+    open3D: function (pdb_url, chain1, chain2, label) {
+      this.closeDisplay();
+      this.display_label = label;
+      this.url_3D = `http://3dmol.csb.pitt.edu/viewer.html?url=${pdb_url}
       &surface=opacity:0.6&select=chain:${chain1}&style=cartoon:color~green
-      &select=chain:${chain2}&style=cartoon:color~yellow`)
+      &select=chain:${chain2}&style=cartoon:color~yellow`;
     },
     parsepdb: function (pdb) {
       let residues = [];
@@ -158,12 +165,16 @@ export default {
       });
       return new_edges
     },
-    close2D: function () {
+    closeDisplay: function () {
+      this.display_label = '';
+      this.url_3D = false;
       this.display_graph = false;
       this.s = undefined;
     },
     open2D: function (pdbFile, parsed_xml, label) {
-      this.display_graph = label;
+      this.url_3D = false;
+      this.display_label = label;
+      this.display_graph = true;
       if (!this.s) {
         // Instantiate sigma, use SetTimeout to give Vue a chance to load the container
         setTimeout(() => {
@@ -201,8 +212,9 @@ export default {
 </script>
 
 <style scoped>
-  #graph-container {
+  .display-container {
     height: 400px;
+    width: 100%;
     margin: auto;
   }
   #color-table {
