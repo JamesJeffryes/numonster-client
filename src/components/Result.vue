@@ -13,15 +13,21 @@
           <div id="graph-container" class="display-container"></div>
         </div>
         <div class="col-2">
-          <br>
+          <br/>
           <div id="color-table">
-            <table>
-              <thead>Edge Types</thead>
-                <tr v-for="(color, edge) in edge_colors" :key="edge">
-                  <td><span v-bind:style="{color: color, 'background-color': 'transparent'}" >{{edge}}</span></td>
-                </tr>
-            </table>
+            <h5>Filter Edges</h5>
+            <!--<br/>
+            <vue-slider v-model="dist_filter" :max=15 lazy=True @change="renderGraph"></vue-slider>-->
+            <div v-for='edge in all_edges' :key='edge.id' @change="renderGraph" class='form-check'>
+              <input type='checkbox' v-model='selected_edges' :value='edge.id' class='form-check-input'/>
+              <label v-bind:style="{color: edge.color, 'background-color': 'transparent'}" class='form-check-label'>
+                {{ edge.name }}
+              </label>
+            </div>
           </div>
+          <br/>
+          <h5>Info</h5>
+          {{selected_info}}
         </div>
       </div>
     </div>
@@ -73,26 +79,36 @@
 </template>
 
 <script>
-
+import vueSlider from 'vue-slider-component';
 import ButtonClose from 'bootstrap-vue/src/components/button/button-close';
 export default {
   name: 'Result',
-  components: {ButtonClose},
+  components: {
+    ButtonClose,
+    vueSlider,
+  },
   data: () => ({
     result: '',
     display_label: '',
     display_graph: false,
     url_3D: false,
-    edge_colors: {
-      backbone: '#666',
-      HYDPHB: '#880000',
-      ELCSTA: '#000088',
-      HYBOND: '#008800'
+    selected_edges: [],
+    selected_info: '',
+    dist_filter: [
+      0,
+      15
+    ],
+    all_edges: {
+      HYDPHB: {id: 'HYDPHB', name: 'Hydrophobic', color: '#880000'},
+      ELCSTA: {id: 'ELCSTA', name: 'Electrostatic', color: '#000088'},
+      HYBOND: {id: 'HYBOND', name: 'Hydrogen Bond', color: '#008800'},
+      SLTBDG: {id: 'SLTBDG', name: 'Salt Bridge', color: '#6e0088'},
     },
+    open_xml: {},
     s: undefined,
-    info: '',
   }),
   mounted: function () {
+    this.selected_edges = Object.keys(this.all_edges);
     this.$http.get(this.$server_url + '/results/' + this.$route.params.job_id).then(function (response) {
       this.result = response.body;
     }, function (response) {
@@ -132,7 +148,7 @@ export default {
                 label: chain + ' backbone',
                 source: residues[residues.length - 1].id,
                 target: resid,
-                color: this.edge_colors.backbone,
+                color: '#666',
                 size: 0.1,
               });
             } else {
@@ -143,7 +159,7 @@ export default {
               label: `${resid}: ${aa}`,
               x: 2 * (parseInt(index) - min_chain_idx[chain]),
               y: offset,
-              color: this.edge_colors.backbone,
+              color: '#666',
               size: 0.1,
             });
           }
@@ -151,19 +167,48 @@ export default {
       });
       return {'nodes': residues, 'edges': bonds}
     },
-    extractParsedXML: function (xml_json) {
+    extractParsedXML: function (xml_json, bond_types) {
+      let new_nodes = [];
       let new_edges = [];
+      let node_ids = new Set();
       JSON.parse(xml_json).BONDS.BOND.forEach((bond, index) => {
+        const source = bond.RESIDUE[0].chain._text + bond.RESIDUE[0]._attributes.index;
+        const target = bond.RESIDUE[1].chain._text + bond.RESIDUE[1]._attributes.index;
+        if (!node_ids.has(source)) {
+          new_nodes.push({
+            id: source,
+            label: `${source}: ${bond.RESIDUE[0].name._text}`,
+            x: 2 * new_nodes.length,
+            y: 50,
+            size: 1,
+          });
+          node_ids.add(source)
+        }
+        if (!node_ids.has(target)) {
+          new_nodes.push({
+            id: target,
+            label: `${target}: ${bond.RESIDUE[0].name._text}`,
+            x: 3 * new_nodes.length,
+            y: 0,
+            size: 1,
+          });
+          node_ids.add(target)
+        }
+        if (!bond_types.includes(bond.type._text)) { return }
+        if (parseFloat(bond.dist._text) < this.dist_filter[0]) { return }
+        if (parseFloat(bond.dist._text) > this.dist_filter[1]) { return }
         new_edges.push({
-          id: `M${index}`,
-          label: bond.type._text,
+          id: `Bond ${index + 1}`,
+          label: this.all_edges[bond.type._text].name,
           size: 1 / parseFloat(bond.dist._text),
-          source: bond.RESIDUE[0].chain._text + bond.RESIDUE[0]._attributes.index,
-          target: bond.RESIDUE[1].chain._text + bond.RESIDUE[1]._attributes.index,
-          color: this.edge_colors[bond.type._text],
+          source: source,
+          target: target,
+          color: this.all_edges[bond.type._text].color,
+          type: bond.type._text,
+          dist: bond.dist._text,
         })
       });
-      return new_edges
+      return {'nodes': new_nodes, 'edges': new_edges}
     },
     closeDisplay: function () {
       this.display_label = '';
@@ -175,6 +220,7 @@ export default {
       this.url_3D = false;
       this.display_label = label;
       this.display_graph = true;
+      this.open_xml = parsed_xml;
       if (!this.s) {
         // Instantiate sigma, use SetTimeout to give Vue a chance to load the container
         setTimeout(() => {
@@ -185,27 +231,36 @@ export default {
             },
             settings: {
               drawLabels: true,
-              maxNodeSize: 2,
+              maxNodeSize: 5,
               minEdgeSize: 0.2,
               maxEdgeSize: 2,
               enableEdgeHovering: true,
-              edgeHoverSizeRatio: 4,
+              edgeHoverSizeRatio: 2,
               edgeHoverExtremities: true,
               sideMargin: 5,
               singleHover: true,
             }
-          })
+          });
+          this.s.bind('overNode', e => {
+            this.selected_info = `${e.data.node.label}`;
+          });
+          this.s.bind('overEdge', e => {
+            const edge = e.data.edge;
+            this.selected_info = `ID: ${edge.id} Type: ${edge.label} Distance: ${edge.dist}`
+          });
+          this.renderGraph();
         }, 100);
+      } else {
+        this.renderGraph();
       }
-      this.$http.get(pdbFile).then((response) => {
-        response.text().then((pdb) => {
-          let graph = this.parsepdb(pdb);
-          graph.edges = graph.edges.concat(this.extractParsedXML(parsed_xml));
-          this.s.graph.clear();
-          this.s.graph.read(graph);
-          this.s.refresh();
-        });
-      });
+    },
+    renderGraph: function () {
+      if (!this.s) { return }
+      let graph = this.extractParsedXML(this.open_xml, this.selected_edges);
+      console.log(graph);
+      this.s.graph.clear();
+      this.s.graph.read(graph);
+      this.s.refresh();
     },
   }
 }
